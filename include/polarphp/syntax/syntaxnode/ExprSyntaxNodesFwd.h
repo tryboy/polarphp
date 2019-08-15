@@ -17,8 +17,30 @@
 namespace polar::syntax {
 
 class ExprSyntax;
+class ParenDecoratedExprSyntax;
 class NullExprSyntax;
+class OptionalExprSyntax;
+
 class VariableExprSyntax;
+class ClassConstIdentifierExprSyntax;
+class ConstExprSyntax;
+class StaticMemberExprSyntax;
+class NewVariableClauseSyntax;
+class CallableVariableExprSyntax;
+class CallableFuncNameClauseSyntax;
+class MemberNameClauseSyntax;
+class PropertyNameClauseSyntax;
+class InstancePropertyExprSyntax;
+class StaticPropertyExprSyntax;
+
+// argument clauses
+class ArgumentSyntax;
+class ArgumentListItemSyntax;
+class ArgumentListClauseSyntax;
+
+class DereferencableClauseSyntax;
+class VariableClassNameClauseSyntax;
+class ClassNameClauseSyntax;
 class BraceDecoratedExprClauseSyntax;
 class BraceDecoratedVariableExprSyntax;
 class ArrayKeyValuePairItemSyntax;
@@ -27,8 +49,16 @@ class ArrayPairItemSyntax;
 class ListRecursivePairItemSyntax;
 class ListPairItemSyntax;
 class SimpleVariableExprSyntax;
-class ArrayExprSyntax;
-class SimplifiedArrayExprSyntax;
+class ArrayCreateExprSyntax;
+class SimplifiedArrayCreateExprSyntax;
+class ArrayAccessExprSyntax;
+class BraceDecoratedArrayAccessExprSyntax;
+class SimpleFunctionCallExprSyntax;
+class FunctionCallExprSyntax;
+class InstanceMethodCallExprSyntax;
+class StaticMethodCallExprSyntax;
+class DereferencableScalarExprSyntax;
+class ScalarExprSyntax;
 class ClassRefParentExprSyntax;
 class ClassRefStaticExprSyntax;
 class ClassRefSelfExprSyntax;
@@ -36,7 +66,7 @@ class IntegerLiteralExprSyntax;
 class FloatLiteralExprSyntax;
 class StringLiteralExprSyntax;
 
-/// for encaps var syntax
+// for encaps var syntax
 class EncapsVarOffsetSyntax;
 class EncapsArrayVarSyntax;
 class EncapsObjPropSyntax;
@@ -58,6 +88,10 @@ class PostfixOperatorExprSyntax;
 class BinaryOperatorExprSyntax;
 class UseLexicalVarClauseSyntax;
 class LexicalVarItemSyntax;
+
+// Decl Syntax nodes forward declares
+class NameSyntax;
+class IdentifierSyntax;
 
 /// type: SyntaxCollection
 /// element type: ExprSyntax
@@ -104,6 +138,16 @@ using ListPairItemListSyntax = SyntaxCollection<SyntaxKind::ListPairItemList, Li
 /// | T_ENCAPSED_AND_WHITESPACE encaps_var
 ///
 using EncapsItemListSyntax = SyntaxCollection<SyntaxKind::EncapsListItem, EncapsListItemSyntax>;
+
+///
+/// type: SyntaxCollection
+/// element type: ArgumentSyntax
+///
+/// non_empty_argument_list:
+///   argument
+/// | non_empty_argument_list ',' argument
+///
+using ArgumentListSyntax = SyntaxCollection<SyntaxKind::ArgumentList, ArgumentListItemSyntax>;
 
 } // polar::syntax
 

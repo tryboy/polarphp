@@ -20,6 +20,64 @@
 
 namespace polar::syntax {
 
+///
+/// paren_decorated_expr：
+///   '(' expr ')'
+///
+class ParenDecoratedExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 1;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: TokenSyntax (T_LEFT_PAREN)
+      /// optional: false
+      ///
+      LeftParenToken,
+      ///
+      /// type: ExprSyntax
+      /// optional: false
+      ///
+      Expr,
+      ///
+      /// type: TokenSyntax (T_RIGHT_PAREN)
+      /// optional: false
+      ///
+      RightParenToken
+   };
+
+public:
+   ParenDecoratedExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   TokenSyntax getLeftParenToken();
+   ExprSyntax getExpr();
+   TokenSyntax getRightParenToken();
+
+   ParenDecoratedExprSyntax withLeftParenToken(std::optional<TokenSyntax> leftParenToken);
+   ParenDecoratedExprSyntax withExpr(std::optional<ExprSyntax> expr);
+   ParenDecoratedExprSyntax withRightParenToken(std::optional<TokenSyntax> rightParenToken);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::ParenDecoratedExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class ParenDecoratedExprSyntaxBuilder;
+   void validate();
+};
+
 class NullExprSyntax final : public ExprSyntax
 {
 public:
@@ -53,6 +111,973 @@ public:
 
 private:
    friend class NullExprSyntaxBuilder;
+   void validate();
+};
+
+///
+/// optional_expr:
+///   %empty
+/// | expr
+///
+class OptionalExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 1;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 0;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      /// type: ExprSyntax
+      /// optional: true
+      Expr,
+   };
+
+public:
+   OptionalExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   std::optional<ExprSyntax> getExpr();
+   OptionalExprSyntax withExpr(std::optional<ExprSyntax> expr);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::OptionalExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class OptionalExprSyntaxBuilder;
+   void validate();
+};
+
+///
+/// variable:
+///   callable_variable
+/// | static_member
+/// | dereferencable T_OBJECT_OPERATOR property_name
+///
+class VariableExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 1;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: ExprSyntax
+      /// optional: false
+      /// node choices: true
+      /// -------------------------------------------
+      /// node choice: CallableVariableExprSyntax
+      /// -------------------------------------------
+      /// node choice: StaticPropertyExprSyntax
+      /// -------------------------------------------
+      /// node choice: InstancePropertyExprSyntax
+      ///
+      Var
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   VariableExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   ExprSyntax getVar();
+   VariableExprSyntax withVar(std::optional<ExprSyntax> var);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::VariableExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class VariableExprSyntaxBuilder;
+   void validate();
+};
+
+///
+/// class_const_identifier:
+///   class_name T_PAAMAYIM_NEKUDOTAYIM identifier
+/// | variable_class_name T_PAAMAYIM_NEKUDOTAYIM identifier
+///
+class ClassConstIdentifierExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 3;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 3;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// ----------------------------------------
+      /// node choice: VariableClassNameClauseSyntax
+      /// ----------------------------------------
+      /// node choice: ClassNameClauseSyntax
+      ///
+      ClassName,
+      ///
+      /// type: TokenSyntax (T_PAAMAYIM_NEKUDOTAYIM)
+      ///
+      SeparatorToken,
+      ///
+      /// type: IdentifierSyntax
+      /// optional: false
+      ///
+      Identifier
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   ClassConstIdentifierExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   Syntax getClassName();
+   TokenSyntax getSeparatorToken();
+   IdentifierSyntax getIdentifier();
+
+   ClassConstIdentifierExprSyntax withClassName(std::optional<Syntax> className);
+   ClassConstIdentifierExprSyntax withSeparatorToken(std::optional<TokenSyntax> separator);
+   ClassConstIdentifierExprSyntax withIdentifier(std::optional<TokenSyntax> identifier);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::ClassConstIdentifierExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class ClassConstIdentifierExprSyntaxBuilder;
+   void validate();
+};
+
+///
+/// constant:
+///   name
+/// | class_name T_PAAMAYIM_NEKUDOTAYIM identifier
+/// | variable_class_name T_PAAMAYIM_NEKUDOTAYIM identifier
+///
+class ConstExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 1;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// ---------------------------------------
+      /// node choice: NameSyntax
+      /// ---------------------------------------
+      /// node choice: ClassConstIdentifierExprSyntax
+      Identifier
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   ConstExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   Syntax getIdentifier();
+   ConstExprSyntax withIdentifier(std::optional<Syntax> identifier);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::ConstExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class ConstExprSyntaxBuilder;
+   void validate();
+};
+
+///
+/// new_variable:
+///   simple_variable
+/// | new_variable '[' optional_expr ']'
+/// | new_variable '{' expr '}'
+/// | new_variable T_OBJECT_OPERATOR property_name
+/// | class_name T_PAAMAYIM_NEKUDOTAYIM simple_variable
+/// | new_variable T_PAAMAYIM_NEKUDOTAYIM simple_variable
+///
+class NewVariableClauseSyntax final : public Syntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 1;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: ExprSyntax
+      /// optional: false
+      /// node choices: true
+      /// --------------------------------------------------
+      /// node choice: SimpleVariableExprSyntax
+      /// --------------------------------------------------
+      /// node choice: ArrayAccessExprSyntax
+      /// --------------------------------------------------
+      /// node choice: BraceDecoratedArrayAccessExprSyntax
+      /// --------------------------------------------------
+      /// node choice: InstancePropertyExprSyntax
+      /// --------------------------------------------------
+      /// node choice: StaticPropertyExprSyntax
+      ///
+      VarNode
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   NewVariableClauseSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : Syntax(root, data)
+   {
+      validate();
+   }
+
+   ExprSyntax getVar();
+   NewVariableClauseSyntax withVar(std::optional<ExprSyntax> var);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::NewVariableClause;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class NewVariableClauseSyntaxBuilder;
+   void validate();
+};
+
+///
+/// callable_variable:
+///   simple_variable
+/// | dereferencable '[' optional_expr ']'
+/// | constant '[' optional_expr ']'
+/// | dereferencable '{' expr '}'
+/// | dereferencable T_OBJECT_OPERATOR property_name argument_list
+/// | function_call
+///
+class CallableVariableExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 1;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: ExprSyntax
+      /// optional: false
+      /// node choices: true
+      /// ----------------------------------------------------
+      /// node choice: SimpleVariableExprSyntax
+      /// ----------------------------------------------------
+      /// node choice: ArrayAccessExprSyntax
+      /// ----------------------------------------------------
+      /// node choice: BraceDecoratedArrayAccessExprSyntax
+      /// ----------------------------------------------------
+      /// node choice: InstanceMethodCallExprSyntax
+      /// ----------------------------------------------------
+      /// node choice: FunctionCallExprSyntax
+      ///
+      Var
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   CallableVariableExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   ExprSyntax getVar();
+   CallableVariableExprSyntax withVar(std::optional<ExprSyntax> var);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::CallableVariableExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class CallableVariableExprSyntaxBuilder;
+   void validate();
+};
+
+///
+/// callable_expr:
+///   callable_variable
+/// | '(' expr ')'
+/// | dereferencable_scalar
+///
+class CallableFuncNameClauseSyntax final : public Syntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 1;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// -----------------------------------------------
+      /// node choice: CallableVariableExprSyntax
+      /// -----------------------------------------------
+      /// node choice: ParenDecoratedExprSyntax
+      /// -----------------------------------------------
+      /// node choice: DereferencableScalarExprSyntax
+      ///
+      FuncName
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   CallableFuncNameClauseSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : Syntax(root, data)
+   {
+      validate();
+   }
+
+   Syntax getFuncName();
+   CallableFuncNameClauseSyntax withFuncName(std::optional<Syntax> funcName);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::CallableFuncNameClause;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class CallableFuncNameClauseSyntaxBuilder;
+   void validate();
+};
+
+///
+/// member_name:
+///   identifier
+/// | '{' expr '}'
+/// | simple_variable
+///
+class MemberNameClauseSyntax final : public Syntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 1;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// ---------------------------------------------
+      /// node choice: IdentifierSyntax
+      /// ---------------------------------------------
+      /// node choice: BraceDecoratedExprClauseSyntax
+      /// ---------------------------------------------
+      /// node choice: SimpleVariableExprSyntax
+      ///
+      Name
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   MemberNameClauseSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : Syntax(root, data)
+   {
+      validate();
+   }
+
+   Syntax getName();
+   MemberNameClauseSyntax withName(std::optional<Syntax> name);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::MemberNameClause;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class MemberNameClauseSyntaxBuilder;
+   void validate();
+};
+
+///
+/// property_name:
+///   T_IDENTIFIER_STRING
+/// | '{' expr '}'
+/// | simple_variable
+///
+class PropertyNameClauseSyntax final : public Syntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 1;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// ------------------------------------------------
+      /// node choice: TokenSyntax (T_IDENTIFIER_STRING)
+      /// ------------------------------------------------
+      /// node choice: BraceDecoratedExprClauseSyntax
+      /// ------------------------------------------------
+      /// node choice: SimpleVariableExprSyntax
+      ///
+      Name
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   PropertyNameClauseSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : Syntax(root, data)
+   {
+      validate();
+   }
+
+   Syntax getName();
+   PropertyNameClauseSyntax withName(std::optional<Syntax> name);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::PropertyNameClause;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class PropertyNameClauseSyntaxBuilder;
+   void validate();
+};
+
+///
+/// object_property_access:
+///   new_variable T_OBJECT_OPERATOR property_name
+/// | dereferencable T_OBJECT_OPERATOR property_name
+/// | T_VARIABLE T_OBJECT_OPERATOR T_IDENTIFIER_STRING
+///
+class InstancePropertyExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 3;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 3;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// ----------------------------------------
+      /// node choice: TokenSyntax (T_VARIABLE)
+      /// ----------------------------------------
+      /// node choice: NewVariableSyntax
+      /// ----------------------------------------
+      /// node choice: DereferencableClauseSyntax
+      ///
+      ObjectRef,
+      ///
+      /// type: TokenSyntax (T_OBJECT_OPERATOR)
+      /// optional: false
+      ///
+      Separator,
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// ------------------------------------------------
+      /// node choice: TokenSyntax (T_IDENTIFIER_STRING)
+      /// ------------------------------------------------
+      /// node choice: PropertyNameClauseSyntax
+      ///
+      PropertyName
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   InstancePropertyExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   Syntax getObjectRef();
+   TokenSyntax getSeparator();
+   Syntax getPropertyName();
+
+   InstancePropertyExprSyntax withObjectRef(std::optional<Syntax> objectRef);
+   InstancePropertyExprSyntax withSeparator(std::optional<TokenSyntax> separator);
+   InstancePropertyExprSyntax withPropertyName(std::optional<Syntax> propertyName);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::InstancePropertyExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class InstancePropertyExprSyntaxBuilder;
+   void validate();
+};
+
+///
+/// static_member:
+///   class_name T_PAAMAYIM_NEKUDOTAYIM simple_variable
+/// | variable_class_name T_PAAMAYIM_NEKUDOTAYIM simple_variable
+/// | new_variable T_PAAMAYIM_NEKUDOTAYIM simple_variable
+///
+class StaticPropertyExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 3;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 3;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// --------------------------------------------
+      /// node choice: ClassNameClauseSyntax
+      /// --------------------------------------------
+      /// node choice: VariableClassNameClauseSyntax
+      /// --------------------------------------------
+      /// node choice: NewVariableClauseSyntax
+      ///
+      ClassName,
+      ///
+      /// type: TokenSyntax (T_PAAMAYIM_NEKUDOTAYIM)
+      /// optional: false
+      ///
+      Separator,
+      ///
+      /// type: SimpleVariableExprSyntax
+      /// optional: false
+      ///
+      MemberName
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   StaticPropertyExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   Syntax getClassName();
+   TokenSyntax getSeparator();
+   SimpleVariableExprSyntax getMemberName();
+
+   StaticPropertyExprSyntax withClassName(std::optional<Syntax> className);
+   StaticPropertyExprSyntax withSeparator(std::optional<TokenSyntax> separator);
+   StaticPropertyExprSyntax withMemberName(std::optional<SimpleVariableExprSyntax> memberName);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::StaticPropertyExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class StaticPropertyExprSyntaxBuilder;
+   void validate();
+};
+
+///
+/// argument:
+///   expr
+/// | T_ELLIPSIS expr
+///
+class ArgumentSyntax final : public Syntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 2;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: TokenSyntax (T_ELLIPSIS)
+      /// optional: true
+      ///
+      EllipsisToken,
+      ///
+      /// type: ExprSyntax
+      /// optional: false
+      ///
+      Expr
+   };
+
+public:
+   ArgumentSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : Syntax(root, data)
+   {
+      validate();
+   }
+
+   std::optional<TokenSyntax> getEllipsisToken();
+   ExprSyntax getExpr();
+   ArgumentSyntax withEllipsisToken(std::optional<TokenSyntax> ellipsisToken);
+   ArgumentSyntax withExpr(std::optional<ExprSyntax> expr);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::Argument;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class ArgumentSyntaxBuilder;
+   void validate();
+};
+
+///
+/// argument_list_item:
+///   argument ','
+///
+class ArgumentListItemSyntax final : public Syntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 2;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: ArgumentSyntax
+      /// optional: false
+      ///
+      Argument,
+      ///
+      /// type: TokenSyntax (T_COMMA)
+      /// optional: true
+      ///
+      TrailingComma
+   };
+
+public:
+   ArgumentListItemSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : Syntax(root, data)
+   {
+      validate();
+   }
+
+   ArgumentSyntax getArgument();
+   std::optional<TokenSyntax> getTokenSyntax();
+
+   ArgumentListItemSyntax withArgument(std::optional<ArgumentSyntax> argument);
+   ArgumentListItemSyntax withTrailingComma(std::optional<TokenSyntax> comma);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::ArgumentListItem;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class ArgumentListItemSyntaxBuilder;
+   void validate();
+};
+
+///
+/// argument_list:
+///   '(' ')'
+/// | '(' non_empty_argument_list possible_comma ')'
+///
+class ArgumentListClauseSyntax final : public Syntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 3;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 2;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: TokenSyntax (T_LEFT_PAREN)
+      /// optional: false
+      ///
+      LeftParenToken,
+      ///
+      /// type: ArgumentListSyntax
+      /// optional: true
+      ///
+      Arguments,
+      ///
+      /// type: TokenSyntax (T_RIGHT_PAREN)
+      /// optional: false
+      ///
+      RightParenToken
+   };
+
+public:
+   ArgumentListClauseSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : Syntax(root, data)
+   {
+      validate();
+   }
+
+   TokenSyntax getLeftParenToken();
+   std::optional<ArgumentListSyntax> getArguments();
+   TokenSyntax getRightParenToken();
+
+   ArgumentListClauseSyntax withLeftParenToken(std::optional<TokenSyntax> leftParenToken);
+   ArgumentListClauseSyntax withArguments(std::optional<ArgumentListSyntax> arguments);
+   ArgumentListClauseSyntax withRightParenToken(std::optional<TokenSyntax> rightParenToken);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::ArgumentListClause;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class ArgumentListClauseSyntaxBuilder;
+   void validate();
+};
+
+///
+/// dereferencable_clause:
+///   variable
+/// | '(' expr ')'
+/// | dereferencable_scalar
+///
+class DereferencableClauseSyntax final : public Syntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 1;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: ExprSyntax
+      /// optional: false
+      /// node choices: true
+      /// ---------------------------------------------
+      /// node choice: VariableExprSyntax
+      /// ---------------------------------------------
+      /// node choice: ParenDecoratedExprSyntax
+      /// ---------------------------------------------
+      /// node choice: DereferencableScalarExprSyntax
+      ///
+      DereferencableExpr
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   DereferencableClauseSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : Syntax(root, data)
+   {
+      validate();
+   }
+
+   ExprSyntax getDereferencableExpr();
+   DereferencableClauseSyntax withDereferencableExpr(std::optional<ExprSyntax> expr);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::DereferencableClause;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class DereferencableClauseSyntaxBuilder;
+   void validate();
+};
+
+///
+/// variable_class_name:
+///   dereferencable
+///
+class VariableClassNameClauseSyntax final : Syntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 1;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: ExprSyntax
+      /// optional: false
+      ///
+      DereferencableExpr
+   };
+
+public:
+   VariableClassNameClauseSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : Syntax(root, data)
+   {
+      validate();
+   }
+
+   ExprSyntax getDereferencableExpr();
+   VariableClassNameClauseSyntax withDereferencableExpr(std::optional<ExprSyntax> expr);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::VariableClassNameClause;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+private:
+   friend class VariableClassNameClauseSyntaxBuilder;
+   void validate();
+};
+
+///
+/// class_name:
+///   T_STATIC
+/// | name
+///
+class ClassNameClauseSyntax final : public Syntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 1;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// ---------------------------------------
+      /// node choice: TokenSyntax (T_STATIC)
+      /// ---------------------------------------
+      /// node choice: NameExprSyntax
+      ///
+      Name
+   };
+
+public:
+   ClassNameClauseSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : Syntax(root, data)
+   {
+      validate();
+   }
+
+   Syntax getName();
+   ClassNameClauseSyntax withName(std::optional<Syntax> name);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::ClassNameClause;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class ClassNameClauseSyntaxBuilder;
    void validate();
 };
 
@@ -550,7 +1575,7 @@ private:
 /// array_expr:
 ///   T_ARRAY '(' array_pair_list ')'
 ///
-class ArrayExprSyntax final : public ExprSyntax
+class ArrayCreateExprSyntax final : public ExprSyntax
 {
 public:
    constexpr static std::uint8_t CHILDREN_COUNT = 4;
@@ -580,7 +1605,7 @@ public:
    };
 
 public:
-   ArrayExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+   ArrayCreateExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
       : ExprSyntax(root, data)
    {
       validate();
@@ -591,14 +1616,14 @@ public:
    ArrayPairItemListSyntax getPairItemList();
    TokenSyntax getRightParen();
 
-   ArrayExprSyntax withArrayToken(std::optional<TokenSyntax> arrayToken);
-   ArrayExprSyntax withLeftParen(std::optional<TokenSyntax> leftParen);
-   ArrayExprSyntax withPairItemList(std::optional<ArrayPairItemListSyntax> pairItemList);
-   ArrayExprSyntax withRightParen(std::optional<TokenSyntax> rightParen);
+   ArrayCreateExprSyntax withArrayToken(std::optional<TokenSyntax> arrayToken);
+   ArrayCreateExprSyntax withLeftParen(std::optional<TokenSyntax> leftParen);
+   ArrayCreateExprSyntax withPairItemList(std::optional<ArrayPairItemListSyntax> pairItemList);
+   ArrayCreateExprSyntax withRightParen(std::optional<TokenSyntax> rightParen);
 
    static bool kindOf(SyntaxKind kind)
    {
-      return kind == SyntaxKind::ArrayExpr;
+      return kind == SyntaxKind::ArrayCreateExpr;
    }
 
    static bool classOf(const Syntax *syntax)
@@ -607,7 +1632,7 @@ public:
    }
 
 private:
-   friend class ArrayExprSyntaxBuilder;
+   friend class ArrayCreateExprSyntaxBuilder;
    void validate();
 };
 
@@ -615,7 +1640,7 @@ private:
 /// simplified_array_expr:
 ///   '[' array_pair_list ']'
 ///
-class SimplifiedArrayExprSyntax final : public ExprSyntax
+class SimplifiedArrayCreateExprSyntax final : public ExprSyntax
 {
 public:
    constexpr static std::uint8_t CHILDREN_COUNT = 3;
@@ -640,7 +1665,7 @@ public:
    };
 
 public:
-   SimplifiedArrayExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+   SimplifiedArrayCreateExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
       : ExprSyntax(root, data)
    {
       validate();
@@ -650,13 +1675,13 @@ public:
    ArrayPairItemListSyntax getPairItemList();
    TokenSyntax getRightSquareBracket();
 
-   SimplifiedArrayExprSyntax withLeftSquareBracket(std::optional<TokenSyntax> leftSquareBracket);
-   SimplifiedArrayExprSyntax withPairItemList(std::optional<ArrayPairItemListSyntax> pairItemList);
-   SimplifiedArrayExprSyntax withRightSquareBracket(std::optional<TokenSyntax> rightSquareBracket);
+   SimplifiedArrayCreateExprSyntax withLeftSquareBracket(std::optional<TokenSyntax> leftSquareBracket);
+   SimplifiedArrayCreateExprSyntax withPairItemList(std::optional<ArrayPairItemListSyntax> pairItemList);
+   SimplifiedArrayCreateExprSyntax withRightSquareBracket(std::optional<TokenSyntax> rightSquareBracket);
 
    static bool kindOf(SyntaxKind kind)
    {
-      return kind == SyntaxKind::SimplifiedArrayExpr;
+      return kind == SyntaxKind::SimplifiedArrayCreateExpr;
    }
 
    static bool classOf(const Syntax *syntax)
@@ -665,7 +1690,528 @@ public:
    }
 
 private:
-   friend class SimplifiedArrayExprSyntaxBuilder;
+   friend class SimplifiedArrayCreateExprSyntaxBuilder;
+   void validate();
+};
+
+///
+/// array_access:
+///   T_VARIABLE '[' encaps_var_offset ']'
+/// | new_variable '[' optional_expr ']'
+/// | constant '[' optional_expr ']'
+/// | dereferencable '[' optional_expr ']'
+///
+class ArrayAccessExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 4;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 4;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// ----------------------------------------
+      /// node choice: TokenSyntax (T_VARIABLE)
+      /// ----------------------------------------
+      /// node choice: NewVariableClauseSyntax
+      /// ----------------------------------------
+      /// node choice: DereferencableClauseSyntax
+      /// ----------------------------------------
+      /// node choice: ConstExprSyntax
+      ///
+      ArrayRef,
+      ///
+      /// type: TokenSyntax (T_LEFT_SQUARE_BRACKET)
+      /// optional: false
+      ///
+      LeftSquareBracket,
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// ----------------------------------------
+      /// node choice: EncapsVarOffsetSyntax
+      /// ----------------------------------------
+      /// node choice: OptionalExprSyntax
+      ///
+      Offset,
+      ///
+      /// type: TokenSyntax (T_RIGHT_SQUARE_BRACKET)
+      /// optional: false
+      ///
+      RightSquareBracket
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   ArrayAccessExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   Syntax getArrayRef();
+   TokenSyntax getLeftSquareBracket();
+   Syntax getOffset();
+   TokenSyntax getRightSquareBracket();
+
+   ArrayAccessExprSyntax withArrayRef(std::optional<Syntax> arrayRef);
+   ArrayAccessExprSyntax withLeftSquareBracket(std::optional<TokenSyntax> leftSquareBracket);
+   ArrayAccessExprSyntax withOffset(std::optional<Syntax> offset);
+   ArrayAccessExprSyntax withRightSquareBracket(std::optional<TokenSyntax> rightSquareBracket);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::ArrayAccessExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+private:
+   friend class ArrayAccessExprSyntaxBuilder;
+   void validate();
+};
+
+///
+/// brace_decorated_array_access:
+///   new_variable '{' expr '}'
+/// | dereferencable '{' expr '}'
+///
+class BraceDecoratedArrayAccessExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 2;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 2;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// -----------------------------------------
+      /// node choice: NewVariableClauseSyntax
+      /// -----------------------------------------
+      /// node choice: DereferencableClauseSyntax
+      ///
+      ArrayRef,
+      ///
+      /// type: BraceDecoratedExprClauseSyntax
+      /// optional: false
+      ///
+      OffsetExpr
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   BraceDecoratedArrayAccessExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   Syntax getArrayRef();
+   BraceDecoratedExprClauseSyntax getOffsetExpr();
+
+   BraceDecoratedArrayAccessExprSyntax withArrayRef(std::optional<Syntax> arrayRef);
+   BraceDecoratedArrayAccessExprSyntax withOffsetExpr(std::optional<BraceDecoratedExprClauseSyntax> offsetExpr);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::BraceDecoratedArrayAccessExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class BraceDecoratedArrayAccessExprBuilder;
+   void validate();
+};
+
+///
+/// simple_function_call:
+///   name argument_list
+/// | callable_expr argument_list
+///
+class SimpleFunctionCallExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 2;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 2;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// --------------------------------------------
+      /// node choice: NameSyntax
+      /// --------------------------------------------
+      /// node choice: CallableFuncNameClauseSyntax
+      ///
+      FuncName,
+      ///
+      /// type: ArgumentListClauseSyntax
+      /// optional: false
+      ///
+      ArgumentsClause
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   SimpleFunctionCallExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   Syntax getFuncName();
+   ArgumentListClauseSyntax getArgumentsClause();
+
+   SimpleFunctionCallExprSyntax withFuncName(std::optional<Syntax> funcName);
+   SimpleFunctionCallExprSyntax withArgumentsClause(std::optional<ArgumentListClauseSyntax> argumentsClause);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::SimpleFunctionCallExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+private:
+   friend class SimpleFunctionCallExprSyntaxBuilder;
+   void validate();
+};
+
+///
+/// function_call:
+///   name argument_list
+/// | class_name T_PAAMAYIM_NEKUDOTAYIM member_name argument_list
+/// | variable_class_name T_PAAMAYIM_NEKUDOTAYIM member_name argument_list
+/// | callable_expr argument_list
+///
+class FunctionCallExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 1;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: ExprSyntax
+      /// optional: false
+      /// node choices: true
+      /// -------------------------------------------
+      /// node choice: SimpleFunctionCallExprSyntax
+      /// -------------------------------------------
+      /// node choice: StaticMethodCallExprSyntax
+      ///
+      Callable
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   FunctionCallExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   ExprSyntax getCallable();
+   FunctionCallExprSyntax withCallable(std::optional<ExprSyntax> callable);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::FunctionCallExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+private:
+   friend class FunctionCallExprSyntaxBuilder;
+   void validate();
+};
+
+///
+/// instance_method_call:
+///   dereferencable T_OBJECT_OPERATOR property_name argument_list
+///
+class InstanceMethodCallExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 2;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 2;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: InstancePropertyExprSyntax
+      /// optional: false
+      ///
+      QualifiedMethodName,
+      ///
+      /// type: ArgumentListClauseSyntax
+      /// optional: false
+      ///
+      ArgumentListClause
+   };
+
+public:
+   InstanceMethodCallExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   InstancePropertyExprSyntax getQualifiedMethodName();
+   ArgumentListClauseSyntax getArgumentListClause();
+
+   InstanceMethodCallExprSyntax withQualifiedMethodName(std::optional<InstancePropertyExprSyntax> methodName);
+   InstanceMethodCallExprSyntax withArgumentListClause(std::optional<ArgumentListClauseSyntax> arguments);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::InstanceMethodCallExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class InstanceMethodCallExperSyntaxBuilder;
+   void validate();
+};
+
+///
+/// static_method_call:
+///   class_name T_PAAMAYIM_NEKUDOTAYIM member_name argument_list
+/// | variable_class_name T_PAAMAYIM_NEKUDOTAYIM member_name argument_list
+///
+class StaticMethodCallExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 4;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 4;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// --------------------------------------------
+      /// node choice: ClassNameClauseSyntax
+      /// --------------------------------------------
+      /// node choice: VariableClassNameClauseSyntax
+      ///
+      ClassName,
+      ///
+      /// type: TokenSyntax (T_PAAMAYIM_NEKUDOTAYIM)
+      /// optional: false
+      ///
+      Separator,
+      ///
+      /// type: MemberNameClauseSyntax
+      /// optional: false
+      ///
+      MethodName,
+      ///
+      /// type: ArgumentListClauseSyntax
+      /// optional: false
+      ///
+      Arguments
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   StaticMethodCallExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   Syntax getClassName();
+   TokenSyntax getSeparator();
+   MemberNameClauseSyntax getMethodName();
+   ArgumentListClauseSyntax getArguments();
+
+   StaticMethodCallExprSyntax withClassName(std::optional<Syntax> className);
+   StaticMethodCallExprSyntax withSeparator(std::optional<TokenSyntax> separator);
+   StaticMethodCallExprSyntax withMethodName(std::optional<MemberNameClauseSyntax> methodName);
+   StaticMethodCallExprSyntax withArguments(std::optional<ArgumentListClauseSyntax> arguments);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::StaticMethodCallExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class StaticMethodCallExprSyntaxBuilder;
+   void validate();
+};
+
+///
+/// dereferencable_scalar:
+///   T_ARRAY '(' array_pair_list ')'
+/// | '[' array_pair_list ']'
+/// | T_CONSTANT_ENCAPSED_STRING
+///
+class DereferencableScalarExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 1;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// ---------------------------------------------
+      /// node choice: ArrayCreateExprSyntax
+      /// ---------------------------------------------
+      /// node choice: SimplifiedArrayCreateExprSyntax
+      /// ---------------------------------------------
+      /// node choice: TokenSyntax (T_CONSTANT_ENCAPSED_STRING)
+      ///
+      ScalarValue
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   DereferencableScalarExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   Syntax getScalarValue();
+   DereferencableScalarExprSyntax withScalarValue(std::optional<Syntax> scalarValue);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::DereferencableScalarExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class DereferencableScalarExprSyntaxBuilder;
+   void validate();
+};
+
+///
+/// scalar:
+///   T_LNUMBER
+/// | T_DNUMBER
+/// | T_LINE
+/// | T_FILE
+/// | T_DIR
+/// | T_TRAIT_CONST
+/// | T_METHOD_CONST
+/// | T_FUNC_CONST
+/// | T_NS_CONST
+/// | T_CLASS_CONST
+/// | T_START_HEREDOC T_ENCAPSED_AND_WHITESPACE T_END_HEREDOC
+/// | T_START_HEREDOC encaps_list T_END_HEREDOC
+/// | T_START_HEREDOC T_END_HEREDOC
+/// | '"' encaps_list '"'
+/// | dereferencable_scalar
+/// | constant
+///
+class ScalarExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 1;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 1;
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::ScalarExpr;
+   }
+
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: Syntax
+      /// optional: false
+      /// node choices: true
+      /// --------------------------------------------
+      /// node choice: TokenSyntax
+      /// token choices:
+      /// T_LNUMBER | T_DNUMBER | T_LINE
+      /// T_FILE | T_DIR | T_TRAIT_CONST
+      /// T_METHOD_CONST | T_FUNC_CONST | T_NS_CONST
+      /// T_CLASS_CONST
+      /// --------------------------------------------
+      /// node choice: HeredocExprSyntax
+      /// --------------------------------------------
+      /// node choice: EncapsListStringExprSyntax
+      /// --------------------------------------------
+      /// node choice: DereferencableScalarExprSyntax
+      /// --------------------------------------------
+      /// node choice: ConstExprSyntax
+      ///
+      Value
+   };
+
+#ifdef POLAR_DEBUG_BUILD
+   const static TokenChoicesType CHILD_TOKEN_CHOICES;
+   const static NodeChoicesType CHILD_NODE_CHOICES;
+#endif
+
+public:
+   ScalarExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   Syntax getValue();
+   ScalarExprSyntax withValue(std::optional<Syntax> value);
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class ScalarExprSyntaxBuilder;
    void validate();
 };
 
@@ -1292,7 +2838,7 @@ public:
    }
 
 private:
-   friend class EncapsDollarCurlyVarSyntaxBuilder;
+   friend class EncapsDollarCurlyArraySyntaxBuilder;
    void validate();
 };
 
@@ -1472,6 +3018,128 @@ public:
 
 private:
    friend class EncapsListItemSyntaxBuilder;
+   void validate();
+};
+
+///
+/// heredoc_expr:
+///   T_START_HEREDOC T_ENCAPSED_AND_WHITESPACE T_END_HEREDOC
+/// | T_START_HEREDOC encaps_list T_END_HEREDOC
+/// | T_START_HEREDOC T_END_HEREDOC
+///
+class HeredocExprSyntax final : public ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 3;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 2;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: TokenSyntax (T_START_HEREDOC)
+      /// optional: false
+      ///
+      StartHeredocToken,
+      ///
+      /// type: Syntax
+      /// node choices: true
+      /// optional: true
+      /// ----------------------------------------------------------
+      /// node choice: TokenSyntax (T_ENCAPSED_AND_WHITESPACE)
+      /// ----------------------------------------------------------
+      /// node choice: EncapsItemListSyntax
+      ///
+      TextClause,
+      ///
+      /// type: TokenSyntax (T_START_HEREDOC)
+      /// optional: false
+      ///
+      EndHeredocToken
+   };
+
+public:
+   HeredocExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   TokenSyntax getStartHeredocToken();
+   std::optional<Syntax> getTextClause();
+   TokenSyntax getEndHeredocToken();
+
+   HeredocExprSyntax withStartHeredocToken(std::optional<TokenSyntax> startHeredocToken);
+   HeredocExprSyntax withTextClause(std::optional<Syntax> textClause);
+   HeredocExprSyntax withEndHeredocToken(std::optional<TokenSyntax> endHeredocToken);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::HeredocExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class HeredocExprSyntaxBuilder;
+   void validate();
+};
+
+///
+/// encaps_list_str:
+///   '"' encaps_list '"'
+///
+class EncapsListStringExprSyntax final : ExprSyntax
+{
+public:
+   constexpr static std::uint8_t CHILDREN_COUNT = 3;
+   constexpr static std::uint8_t REQUIRED_CHILDREN_COUNT = 3;
+   enum Cursor : SyntaxChildrenCountType
+   {
+      ///
+      /// type: TokenSyntax (T_DOUBLE_QUOTE)
+      /// optional: false
+      ///
+      LeftQuoteToken,
+      ///
+      /// type: EncapsItemListSyntax
+      /// optional: false
+      ///
+      EncapsList,
+      ///
+      /// type: TokenSyntax (T_DOUBLE_QUOTE)
+      /// optional: false
+      ///
+      RightQuoteToken
+   };
+public:
+   EncapsListStringExprSyntax(const RefCountPtr<SyntaxData> root, const SyntaxData *data)
+      : ExprSyntax(root, data)
+   {
+      validate();
+   }
+
+   TokenSyntax getLeftQuoteToken();
+   EncapsItemListSyntax getEncapsList();
+   TokenSyntax getRightQuoteToken();
+
+   EncapsListStringExprSyntax withLeftQuoteToken(std::optional<TokenSyntax> leftQuoteToken);
+   EncapsListStringExprSyntax withEncapsList(std::optional<EncapsItemListSyntax> encapsList);
+   EncapsListStringExprSyntax withRightQuoteToken(std::optional<TokenSyntax> rightQuoteToken);
+
+   static bool kindOf(SyntaxKind kind)
+   {
+      return kind == SyntaxKind::EncapsListStringExpr;
+   }
+
+   static bool classOf(const Syntax *syntax)
+   {
+      return kindOf(syntax->getKind());
+   }
+
+private:
+   friend class EncapsListStringExprSyntaxBuilder;
    void validate();
 };
 

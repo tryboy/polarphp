@@ -83,8 +83,32 @@ enum class SyntaxKind : std::uint32_t
 
    /// expr syntax node
    FirstExpr,
+   ParenDecoratedExpr,
    NullExpr,
+   OptionalExpr,
    VariableExpr,
+   ClassConstIdentifierExpr,
+
+   ConstExpr,
+   StaticMemberExpr,
+   NewVariableClause,
+   CallableVariableExpr,
+   CallableFuncNameClause,
+   MemberNameClause,
+   PropertyNameClause,
+   InstancePropertyExpr,
+   StaticPropertyExpr,
+
+   // argument clauses
+   Argument,
+   ArgumentListItem,
+   ArgumentListClause,
+
+   DereferencableClause,
+   VariableClassNameClause,
+   ClassNameClause,
+   ClassNameReference,
+
    BraceDecoratedExprClause,
    BraceDecoratedVariableExpr,
    ArrayKeyValuePairItem,
@@ -93,8 +117,14 @@ enum class SyntaxKind : std::uint32_t
    ListRecursivePairItem,
    ListPairItem,
    SimpleVariableExpr,
-   ArrayExpr,
-   SimplifiedArrayExpr,
+   ArrayCreateExpr,
+   SimplifiedArrayCreateExpr,
+   ArrayAccessExpr,
+   BraceDecoratedArrayAccessExpr,
+   SimpleFunctionCallExpr,
+   FunctionCallExpr,
+   InstanceMethodCallExpr,
+   StaticMethodCallExpr,
    FloatLiteralExpr,
    IntegerLiteralExpr,
    StringLiteralExpr,
@@ -109,6 +139,8 @@ enum class SyntaxKind : std::uint32_t
    EncapsListItem,
    HeredocExpr,
    EncapsListStringExpr,
+   DereferencableScalarExpr,
+   ScalarExpr,
    BooleanLiteralExpr,
    TernaryExpr,
    AssignmentExpr,
@@ -173,6 +205,8 @@ enum class SyntaxKind : std::uint32_t
    ListPairItemList,
    MemberModifierList,
    MemberDeclList,
+   EncapsList,
+   ArgumentList,
 
    // NOTE: Unknown must be the last kind.
    Unknown,
